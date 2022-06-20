@@ -14,15 +14,14 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 enable_testing()
 
 add_subdirectory(googletest)
-add_subdirectory(Matrix)
 
 # Useful: List of header and source files for our project
 set(Headers
-    Matrix.hpp
+    Matrix/Matrix.hpp
 )
 
 set(Sources
-    Matrix.cpp
+    Matrix/Matrix.cpp
 )
 
 # Building library for testing

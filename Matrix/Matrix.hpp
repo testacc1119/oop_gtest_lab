@@ -1,3 +1,5 @@
+#include <exception>
+
 template<typename T>
 class Matrix
 {
@@ -28,6 +30,9 @@ public:
     Matrix operator+(const Matrix & right);
     Matrix operator-(const Matrix & right);
     Matrix operator*(const Matrix & right);
+
+    bool operator==(const Matrix & right);
+    bool operator!=(const Matrix & right);
 
 private:
     unsigned rows;
@@ -101,6 +106,7 @@ Matrix<T>::~Matrix()
 //===================================
 
 //----------- Interface --------------
+
 template<typename T>
 T& Matrix<T>::at(unsigned r, unsigned c)
 {
@@ -138,4 +144,43 @@ Matrix<T> Matrix<T>::transpose() const
 
     return std::move(temp);
 }
+
+template<typename T>
+Matrix<T> Matrix<T>::submatrix(unsigned r, unsigned c) const
+{   
+    // r anc c are row anc column to delete
+    if(r > rows - 1 || c > cols - 1)
+        throw std::exception("r and c must be less than rows and cols");
+
+    Matrix temp;
+    temp.cols = this->cols - 1;
+    temp.rows = this->rows - 1;
+
+    temp.matrix = new T*[temp.rows];
+    for(unsigned i = 0; i < rows; ++i)
+    {
+        temp.matrix[i] = new T[temp.cols];
+        for(unsigned j = 0; j < cols; ++j)
+        {
+            if(i == r || j == c)
+                continue;
+
+            if(i > r)
+            {
+                if(j > c)
+                    temp.matrix[i - 1][j - 1] = this->matrix[i][j];
+                else
+                    temp.matrix[i - 1][j] = this->matrix[i][j];
+            }
+            else if(j > c)
+                temp.matrix[i][j - 1] = this->matrix[i][j];
+            else
+                temp.matrix[i][j] = this->matrix[i][j];
+        }
+    }
+
+    return std::move(temp);
+}
+
+//===================================
 
