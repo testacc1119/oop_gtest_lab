@@ -1,4 +1,4 @@
-#include <exception>
+#include <utility>
 
 template<typename T>
 class Matrix
@@ -150,7 +150,7 @@ Matrix<T> Matrix<T>::submatrix(unsigned r, unsigned c) const
 {   
     // r anc c are row anc column to delete
     if(r > rows - 1 || c > cols - 1)
-        throw std::exception("r and c must be less than rows and cols");
+        throw "r and c must be less than rows and cols";
 
     Matrix temp;
     temp.cols = this->cols - 1;
@@ -185,13 +185,11 @@ Matrix<T> Matrix<T>::submatrix(unsigned r, unsigned c) const
 template<typename T>
 void Matrix<T>::clear()
 {
-    for(unsigned i = 0; i < this->rows; ++i)
-        if(this->matrix[i])
-            delete[] this->matrix[i];
-            
     if(this->matrix)
-        delete[] this->matrix;
-
+        for(unsigned i = 0; i < this->rows; ++i)
+            if(this->matrix[i])
+                delete[] this->matrix[i];
+    
     this->rows = 0;
     this->cols = 0;
     this->matrix = nullptr;
@@ -247,7 +245,7 @@ template<typename T>
 Matrix<T> Matrix<T>::operator+(const Matrix & right) const
 {
     if(this->cols != right.cols || this->rows != right.rows)
-        throw std::exception("Sum works only for matrixes of same size");
+        throw "Sum works only for matrixes of same size";
     
     Matrix temp;
     temp.cols = this->cols;
@@ -270,7 +268,7 @@ template<typename T>
 Matrix<T> Matrix<T>::operator-(const Matrix & right) const
 {
     if(this->cols != right.cols || this->rows != right.rows)
-        throw std::exception("Diff works only for matrixes of same size");
+        throw "Diff works only for matrixes of same size";
     
     Matrix temp;
     temp.cols = this->cols;
@@ -293,7 +291,7 @@ template<typename T>
 Matrix<T> Matrix<T>::operator*(const Matrix & right) const
 {
     if(this->cols != right.rows)
-        throw std::exception("Multiply cannot be done");
+        throw "Multiply cannot be done";
 
     Matrix temp;
     temp.rows = this->rows;
