@@ -19,17 +19,18 @@ public:
     unsigned width() const;
     Matrix transpose() const; 
     Matrix submatrix(unsigned r, unsigned c) const;
+    void clear();
 
     // For square matrixes only
     Matrix inverse() const;
     double determinant() const;
 
     // Operator overloadings
-    Matrix operator=(const Matrix & rhs);
-    Matrix operator=(Matrix && lhs);
-    Matrix operator+(const Matrix & right);
-    Matrix operator-(const Matrix & right);
-    Matrix operator*(const Matrix & right);
+    Matrix& operator=(const Matrix & rhs);
+    Matrix& operator=(Matrix && lhs);
+    Matrix operator+(const Matrix & right) const;
+    Matrix operator-(const Matrix & right) const;
+    Matrix operator*(const Matrix & right) const;
 
     bool operator==(const Matrix & right);
     bool operator!=(const Matrix & right);
@@ -99,8 +100,7 @@ Matrix<T>::Matrix(unsigned r, unsigned c, T** arr) : cols{c}, rows{r}
 template<typename T>
 Matrix<T>::~Matrix()
 {
-    if(this->matrix)
-        delete this->matrix
+    this->clear();
 }
 
 //===================================
@@ -129,16 +129,16 @@ template<typename T>
 Matrix<T> Matrix<T>::transpose() const
 {
     Matrix temp;
-    temp->cols = this->rows;
-    temp->rows = this->cols;
+    temp.cols = this->rows;
+    temp.rows = this->cols;
 
-    temp->matrix = new T*[temp->rows];
-    for(unsigned i = 0; i < temp->rows; ++i)
+    temp.matrix = new T*[temp.rows];
+    for(unsigned i = 0; i < temp.rows; ++i)
     {
-        temp->matrix[i] = new T[temp->cols];
-        for(unsigned j = 0; j < temp->cols; ++j)
+        temp.matrix[i] = new T[temp.cols];
+        for(unsigned j = 0; j < temp.cols; ++j)
         {
-            temp->matrix[i][j] = this->matrix[j][i];
+            temp.matrix[i][j] = this->matrix[j][i];
         }
     }
 
@@ -182,5 +182,156 @@ Matrix<T> Matrix<T>::submatrix(unsigned r, unsigned c) const
     return std::move(temp);
 }
 
+template<typename T>
+void Matrix<T>::clear()
+{
+    for(unsigned i = 0; i < this->rows; ++i)
+        if(this->matrix[i])
+            delete[] this->matrix[i];
+            
+    if(this->matrix)
+        delete[] this->matrix;
+
+    this->rows = 0;
+    this->cols = 0;
+    this->matrix = nullptr;
+}
+
 //===================================
 
+//----------- For square --------------
+
+
+
+//=====================================
+
+
+//----------- Operator overloading --------------
+
+template<typename T>
+Matrix<T>& Matrix<T>::operator=(const Matrix & rhs)
+{
+    this->clear();
+
+    this->rows = rhs.rows;
+    this->cols = rhs.cols;
+
+    this->matrix = new T*[rows];
+    for(unsigned i = 0; i < rows; ++i)
+    {
+        this->matrix[i] = new T[cols];
+        for(unsigned j = 0; i < cols; ++j)
+        {
+            this->matrix[i][j] = rhs.matrix[i][j];
+        }
+    }
+
+    return *this;
+}
+
+template<typename T>
+Matrix<T>& Matrix<T>::operator=(Matrix && lhs)
+{
+    this->clear();
+
+    this->rows = lhs.rows;
+    this->cols = lhs.cols;
+
+    this->matrix = lhs.matrix;
+    lhs.matrix = nullptr;
+
+    return *this;
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::operator+(const Matrix & right) const
+{
+    if(this->cols != right.cols || this->rows != right.rows)
+        throw std::exception("Sum works only for matrixes of same size");
+    
+    Matrix temp;
+    temp.cols = this->cols;
+    temp.rows = this->rows;
+
+    temp.matrix = new T*[temp.rows];
+    for(unsigned i = 0; i < temp.rows; ++i)
+    {
+        temp.matrix[i] = new T[temp.cols];
+        for(unsigned j = 0; j < temp.cols; ++j)
+        {
+            temp.matrix[i][j] = this->matrix[i][j] + right.matrix[i][j];
+        }
+    }
+
+    return std::move(temp);
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::operator-(const Matrix & right) const
+{
+    if(this->cols != right.cols || this->rows != right.rows)
+        throw std::exception("Diff works only for matrixes of same size");
+    
+    Matrix temp;
+    temp.cols = this->cols;
+    temp.rows = this->rows;
+
+    temp.matrix = new T*[temp.rows];
+    for(unsigned i = 0; i < temp.rows; ++i)
+    {
+        temp.matrix[i] = new T[temp.cols];
+        for(unsigned j = 0; j < temp.cols; ++j)
+        {
+            temp.matrix[i][j] = this->matrix[i][j] - right.matrix[i][j];
+        }
+    }
+
+    return std::move(temp);
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::operator*(const Matrix & right) const
+{
+    if(this->cols != right.rows)
+        throw std::exception("Multiply cannot be done");
+
+    Matrix temp;
+    temp.rows = this->rows;
+    temp.cols = right.cols;
+
+    temp.matrix = new T*[temp.rows];
+    for(unsigned i = 0; i < temp.rows; ++i)
+    {
+        temp.matrix[i] = new T[temp.cols];
+        for(unsigned j = 0; j < temp.cols; ++j)
+        {
+            temp.matrix[i][j] = T();
+            for(unsigned k = 0; k < this->cols; ++k)
+                temp.matrix[i][j] += this->matrix[i][k] + right.matrix[k][j];
+        }
+    }
+
+    return std::move(temp);
+}
+
+template<typename T>
+bool Matrix<T>::operator==(const Matrix & right)
+{
+    if(this->rows != right.rows || this->cols != right.cols)
+        return false;
+
+    for(unsigned i = 0; i < rows; ++i)
+        for(unsigned j = 0; j < cols; ++j)
+            if(this->matrix[i][j] != right.matrix[i][j])
+                return false;
+
+    return true;
+}
+
+template<typename T>
+bool Matrix<T>::operator!=(const Matrix & right)
+{
+    return !(*this == right);
+}
+
+//===============================================

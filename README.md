@@ -9,7 +9,7 @@
 Fully functional and operable Matrix class.
 
 Project plan:
-- [ ] Basic matrix constructors and destructor
-- [ ] Basic matrix operations
+- [x] Basic matrix constructors and destructor
+- [x] Basic matrix operations
 - [ ] Basic matrix operators
 - [ ] Provide unit-testing
