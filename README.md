@@ -12,3 +12,4 @@ Project plan:
 - [ ] Basic matrix constructors and destructor
 - [ ] Basic matrix operations
 - [ ] Basic matrix operators
+- [ ] Provide unit-testing
