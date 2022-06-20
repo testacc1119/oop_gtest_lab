@@ -8,7 +8,7 @@ public:
     Matrix() : matrix{nullptr}, cols{0}, rows{0} {};
     Matrix(const Matrix & rhs); // copy
     Matrix(Matrix && lhs);      // move
-    Matrix(unsigned r, unsigned c, T& val); // construct with basic value
+    Matrix(unsigned r, unsigned c, const T& val); // construct with basic value
     Matrix(unsigned r, unsigned c, T** arr);    // construct from 2D array
     // Destructor
     ~Matrix();
@@ -22,8 +22,8 @@ public:
     void clear();
 
     // For square matrixes only
-    Matrix inverse() const;
-    double determinant() const;
+    //Matrix inverse() const;
+    //double determinant() const;
 
     // Operator overloadings
     Matrix& operator=(const Matrix & rhs);
@@ -51,7 +51,7 @@ Matrix<T>::Matrix(const Matrix & rhs) : cols{rhs.cols}, rows{rhs.rows}
     for(unsigned i = 0; i < rows; ++i)
     {
         this->matrix[i] = new T[cols];
-        for(unsigned j = 0; i < cols; ++j)
+        for(unsigned j = 0; j < cols; ++j)
         {
             this->matrix[i][j] = rhs.matrix[i][j];
         }
@@ -66,13 +66,13 @@ Matrix<T>::Matrix(Matrix && lhs) : cols{lhs.cols}, rows{lhs.rows}
 }
 
 template<typename T>
-Matrix<T>::Matrix(unsigned r, unsigned c, T& val) : cols{c}, rows{r}
+Matrix<T>::Matrix(unsigned r, unsigned c, const T& val) : cols{c}, rows{r}
 {
     this->matrix = new T*[rows];
     for(unsigned i = 0; i < rows; ++i)
     {
         this->matrix[i] = new T[cols];
-        for(unsigned j = 0; i < cols; ++j)
+        for(unsigned j = 0; j < cols; ++j)
         {
             this->matrix[i][j] = val;
         }
@@ -86,7 +86,7 @@ Matrix<T>::Matrix(unsigned r, unsigned c, T** arr) : cols{c}, rows{r}
     for(unsigned i = 0; i < rows; ++i)
     {
         this->matrix[i] = new T[cols];
-        for(unsigned j = 0; i < cols; ++j)
+        for(unsigned j = 0; j < cols; ++j)
         {
             this->matrix[i][j] = arr[i][j];
         }
@@ -220,7 +220,7 @@ Matrix<T>& Matrix<T>::operator=(const Matrix & rhs)
     for(unsigned i = 0; i < rows; ++i)
     {
         this->matrix[i] = new T[cols];
-        for(unsigned j = 0; i < cols; ++j)
+        for(unsigned j = 0; j < cols; ++j)
         {
             this->matrix[i][j] = rhs.matrix[i][j];
         }
