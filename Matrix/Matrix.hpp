@@ -15,12 +15,12 @@ public:
     T& at(unsigned r, unsigned c);  // direct acces to node
     unsigned height() const;
     unsigned width() const;
-    Matrix transpose(); 
-    Matrix submatrix(unsigned r, unsigned c);
+    Matrix transpose() const; 
+    Matrix submatrix(unsigned r, unsigned c) const;
 
     // For square matrixes only
-    Matrix inverse();
-    double determinant();
+    Matrix inverse() const;
+    double determinant() const;
 
     // Operator overloadings
     Matrix operator=(const Matrix & rhs);
@@ -36,7 +36,7 @@ private:
 };
 
 
-//--------- Constructors --------------
+//----------- Constructors --------------
 
 template<typename T>
 Matrix<T>::Matrix(const Matrix & rhs) : cols{rhs.cols}, rows{rhs.rows}
@@ -87,9 +87,9 @@ Matrix<T>::Matrix(unsigned r, unsigned c, T** arr) : cols{c}, rows{r}
     }
 }
 
-//=====================================
+//=======================================
 
-//--------- Destructor --------------
+//----------- Destructor --------------
 
 template<typename T>
 Matrix<T>::~Matrix()
@@ -99,3 +99,43 @@ Matrix<T>::~Matrix()
 }
 
 //===================================
+
+//----------- Interface --------------
+template<typename T>
+T& Matrix<T>::at(unsigned r, unsigned c)
+{
+    return this->matrix[r][c];
+}
+
+template<typename T>
+unsigned Matrix<T>::height() const
+{
+    return this->rows;
+}
+
+template<typename T>
+unsigned Matrix<T>::width() const
+{
+    return this->cols;
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::transpose() const
+{
+    Matrix temp;
+    temp->cols = this->rows;
+    temp->rows = this->cols;
+
+    temp->matrix = new T*[temp->rows];
+    for(unsigned i = 0; i < temp->rows; ++i)
+    {
+        temp->matrix[i] = new T[temp->cols];
+        for(unsigned j = 0; j < temp->cols; ++j)
+        {
+            temp->matrix[i][j] = this->matrix[j][i];
+        }
+    }
+
+    return std::move(temp);
+}
+
