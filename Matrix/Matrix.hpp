@@ -1,4 +1,5 @@
 #include <utility>
+#include <cmath>
 
 template<typename T>
 class Matrix
@@ -9,12 +10,14 @@ public:
     Matrix(const Matrix & rhs); // copy
     Matrix(Matrix && lhs);      // move
     Matrix(unsigned r, unsigned c, const T& val); // construct with basic value
-    Matrix(unsigned r, unsigned c, T** arr);    // construct from 2D array
+    Matrix(unsigned r, unsigned c, T** arr);    // construct from 2D dynamic array
+    template<unsigned r, unsigned c>
+    Matrix(const T (&arr)[r][c]); // construct from 2D dynamic array
     // Destructor
     ~Matrix();
 
     // Interface
-    T& at(unsigned r, unsigned c);  // direct acces to node
+    T& at(unsigned r, unsigned c);  // direct access to node
     unsigned height() const;
     unsigned width() const;
     Matrix transpose() const; 
@@ -23,7 +26,7 @@ public:
 
     // For square matrixes only
     //Matrix inverse() const;
-    //double determinant() const;
+    double determinant() const;
 
     // Operator overloadings
     Matrix& operator=(const Matrix & rhs);
@@ -36,6 +39,9 @@ public:
     bool operator!=(const Matrix & right);
 
 private:
+    static double determinant(const Matrix& mtr, unsigned dim);
+    // T** create_subarray(unsigned r, unsigned c);
+
     unsigned rows;
     unsigned cols;
     T** matrix;
@@ -93,6 +99,21 @@ Matrix<T>::Matrix(unsigned r, unsigned c, T** arr) : cols{c}, rows{r}
     }
 }
 
+template<typename T>
+template<unsigned r, unsigned c>
+Matrix<T>::Matrix(const T (&arr)[r][c]) : cols{c}, rows{r}
+{
+    this->matrix = new T*[rows];
+    for(unsigned i = 0; i < rows; ++i)
+    {
+        this->matrix[i] = new T[cols];
+        for(unsigned j = 0; j < cols; ++j)
+        {
+            this->matrix[i][j] = arr[i][j];
+        }
+    }
+}
+
 //=======================================
 
 //----------- Destructor --------------
@@ -137,7 +158,7 @@ Matrix<T> Matrix<T>::transpose() const
     {
         temp.matrix[i] = new T[temp.cols];
         for(unsigned j = 0; j < temp.cols; ++j)
-        {
+        {   
             temp.matrix[i][j] = this->matrix[j][i];
         }
     }
@@ -148,7 +169,7 @@ Matrix<T> Matrix<T>::transpose() const
 template<typename T>
 Matrix<T> Matrix<T>::submatrix(unsigned r, unsigned c) const
 {   
-    // r anc c are row anc column to delete
+    // r anc c are row and column to delete
     if(r > rows - 1 || c > cols - 1)
         throw "r and c must be less than rows and cols";
 
@@ -199,10 +220,40 @@ void Matrix<T>::clear()
 
 //----------- For square --------------
 
+template<typename T>
+double Matrix<T>::determinant() const
+{
+    if(this->rows != this->cols)
+        throw "Function only can be used for square matrixes";
+
+    // Creating operable 
+
+    return determinant(*this, this->rows);
+}
 
 
 //=====================================
 
+//----------- Hidden functionality --------------
+
+template<typename T>
+double Matrix<T>::determinant(const Matrix& mtr, unsigned dim)
+{
+    if(dim == 2)
+        return mtr.matrix[0][0] * mtr.matrix[1][1] - mtr.matrix[0][1] * mtr.matrix[1][0];
+
+    double det = 0.0;
+    Matrix submatrix;
+    for(unsigned k = 0; k < dim; ++k)
+    {
+        submatrix = mtr.submatrix(0, k);
+        det += std::pow(-1, k) * mtr.matrix[0][k] * determinant(submatrix, dim - 1);
+    }
+
+    return det;
+}
+
+//===============================================
 
 //----------- Operator overloading --------------
 
