@@ -1,4 +1,7 @@
 #include <utility>
+#include <cmath>
+
+#define DOUBLE_COMP_PRECISION .0000000001
 
 template<typename T>
 class Matrix
@@ -39,8 +42,11 @@ public:
 
 private:
     // For square and numeric matrixes only
-    Matrix<double> adjugate() const;
+    Matrix adjugate() const;
     static double determinant(const Matrix& mtr, unsigned dim);
+
+    // Assisting methods
+    static bool equal(const T & a, const T & b);
 
     unsigned rows;
     unsigned cols;
@@ -241,7 +247,7 @@ Matrix<double> Matrix<T>::inverse() const
     if(det == 0)
         throw "No inverse for 0-determinant matrix exists";
 
-    Matrix<double> adj = this->adjugate();
+    Matrix adj = this->adjugate();
     Matrix<double> res;
     res.cols = res.rows = dim;
     res.matrix = new double*[dim];
@@ -250,7 +256,7 @@ Matrix<double> Matrix<T>::inverse() const
     {
         res.matrix[i] = new double[dim];
         for(unsigned j = 0; j < dim; ++j)
-            res.matrix[i][j] = adj.matrix[i][j] / det;
+            res.matrix[i][j] = adj.matrix[i][j] / double(det);
     }  
 
     return std::move(res);
@@ -278,13 +284,13 @@ double Matrix<T>::determinant(const Matrix& mtr, unsigned dim)
 }
 
 template<typename T>
-Matrix<double> Matrix<T>::adjugate() const
+Matrix<T> Matrix<T>::adjugate() const
 {
     unsigned dim = this->rows;
     if(dim == 1)
         return Matrix<double>({ { 1 } });
 
-    Matrix<double> res;
+    Matrix res;
     res.cols = res.rows = dim;
 
     res.matrix = new double*[dim];
@@ -392,7 +398,7 @@ template<typename T>
 Matrix<T> Matrix<T>::operator*(const Matrix & right) const
 {
     if(this->cols != right.rows)
-        throw "Multiply cannot be done";
+        throw "Multiplication cannot be done";
 
     Matrix temp;
     temp.rows = this->rows;
@@ -406,7 +412,7 @@ Matrix<T> Matrix<T>::operator*(const Matrix & right) const
         {
             temp.matrix[i][j] = T();
             for(unsigned k = 0; k < this->cols; ++k)
-                temp.matrix[i][j] += this->matrix[i][k] + right.matrix[k][j];
+                temp.matrix[i][j] += this->matrix[i][k] * right.matrix[k][j];
         }
     }
 
@@ -421,7 +427,7 @@ bool Matrix<T>::operator==(const Matrix & right)
 
     for(unsigned i = 0; i < rows; ++i)
         for(unsigned j = 0; j < cols; ++j)
-            if(this->matrix[i][j] != right.matrix[i][j])
+            if(!equal(this->matrix[i][j], right.matrix[i][j]))
                 return false;
 
     return true;
@@ -434,3 +440,15 @@ bool Matrix<T>::operator!=(const Matrix & right)
 }
 
 //===============================================
+
+template<typename T>
+bool Matrix<T>::equal(const T & a, const T & b)
+{
+    return a == b;
+}
+
+template<>
+bool Matrix<double>::equal(const double & a, const double & b)
+{
+    return std::abs(a - b) < DOUBLE_COMP_PRECISION;
+}
