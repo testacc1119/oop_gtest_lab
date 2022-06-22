@@ -56,6 +56,7 @@ private:
 
     // Assisting methods
     static bool equal(const T & a, const T & b);
+    static T** allocate_matrix(unsigned h, unsigned w);
 
     unsigned rows;
     unsigned cols;
@@ -68,10 +69,10 @@ private:
 template<typename T>
 Matrix<T>::Matrix(const Matrix & rhs) : cols{rhs.cols}, rows{rhs.rows}
 {
-    this->matrix = new T*[rows];
+    this->matrix = allocate_matrix(this->rows, this->cols);
+
     for(unsigned i = 0; i < rows; ++i)
     {
-        this->matrix[i] = new T[cols];
         for(unsigned j = 0; j < cols; ++j)
         {
             this->matrix[i][j] = rhs.matrix[i][j];
@@ -89,10 +90,10 @@ Matrix<T>::Matrix(Matrix && lhs) : cols{lhs.cols}, rows{lhs.rows}
 template<typename T>
 Matrix<T>::Matrix(unsigned r, unsigned c, const T& val) : cols{c}, rows{r}
 {
-    this->matrix = new T*[rows];
+    this->matrix = allocate_matrix(this->rows, this->cols);
+    
     for(unsigned i = 0; i < rows; ++i)
     {
-        this->matrix[i] = new T[cols];
         for(unsigned j = 0; j < cols; ++j)
         {
             this->matrix[i][j] = val;
@@ -103,10 +104,10 @@ Matrix<T>::Matrix(unsigned r, unsigned c, const T& val) : cols{c}, rows{r}
 template<typename T>
 Matrix<T>::Matrix(unsigned r, unsigned c, T** arr) : cols{c}, rows{r}
 {
-    this->matrix = new T*[rows];
+    this->matrix = allocate_matrix(this->rows, this->cols);
+
     for(unsigned i = 0; i < rows; ++i)
     {
-        this->matrix[i] = new T[cols];
         for(unsigned j = 0; j < cols; ++j)
         {
             this->matrix[i][j] = arr[i][j];
@@ -168,10 +169,10 @@ Matrix<T> Matrix<T>::transpose() const
     temp.cols = this->rows;
     temp.rows = this->cols;
 
-    temp.matrix = new T*[temp.rows];
+    temp.matrix = allocate_matrix(temp.rows, temp.cols);
+
     for(unsigned i = 0; i < temp.rows; ++i)
     {
-        temp.matrix[i] = new T[temp.cols];
         for(unsigned j = 0; j < temp.cols; ++j)
         {   
             temp.matrix[i][j] = this->matrix[j][i];
@@ -192,10 +193,10 @@ Matrix<T> Matrix<T>::submatrix(unsigned r, unsigned c) const
     temp.cols = this->cols - 1;
     temp.rows = this->rows - 1;
 
-    temp.matrix = new T*[temp.rows];
+    temp.matrix = allocate_matrix(temp.rows, temp.cols);
+
     for(unsigned i = 0; i < rows; ++i)
     {
-        temp.matrix[i] = new T[temp.cols];
         for(unsigned j = 0; j < cols; ++j)
         {
             if(i == r || j == c)
@@ -222,13 +223,16 @@ template<typename T>
 void Matrix<T>::clear()
 {
     if(this->matrix)
+    {
         for(unsigned i = 0; i < this->rows; ++i)
-            if(this->matrix[i])
-                delete[] this->matrix[i];
-    
-    this->rows = 0;
-    this->cols = 0;
-    this->matrix = nullptr;
+            delete[] this->matrix[i];
+           
+        delete[] this->matrix;
+
+        this->rows = 0;
+        this->cols = 0;
+        this->matrix = nullptr;
+    }
 }
 
 //===================================
@@ -259,14 +263,15 @@ Matrix<T> Matrix<T>::inverse() const
     Matrix adj = this->adjugate();
     Matrix<T> res;
     res.cols = res.rows = dim;
-    res.matrix = new T*[dim];
+    res.matrix = allocate_matrix(dim, dim);
 
     for(unsigned i = 0; i < dim; ++i)
     {
-        res.matrix[i] = new T[dim];
         for(unsigned j = 0; j < dim; ++j)
+        {
             res.matrix[i][j] = adj.matrix[i][j] / T(det);
-    }  
+        }
+    }
 
     return std::move(res);
 }
@@ -302,18 +307,15 @@ Matrix<T> Matrix<T>::adjugate() const
     Matrix res;
     res.cols = res.rows = dim;
 
-    res.matrix = new T*[dim];
+    res.matrix = allocate_matrix(dim, dim);
 
     Matrix subm;
     for(unsigned i = 0; i < dim; ++i)
-    {
-        res.matrix[i] = new T[dim];
         for(unsigned j = 0; j < dim; ++j)
         {
             subm = this->submatrix(j, i);
             res.matrix[i][j] = ((i + j) % 2 ? -1.0 : 1.0) * determinant(subm, dim - 1);
         }
-    }
 
     return std::move(res);
 }
@@ -330,15 +332,11 @@ Matrix<T>& Matrix<T>::operator=(const Matrix & rhs)
     this->rows = rhs.rows;
     this->cols = rhs.cols;
 
-    this->matrix = new T*[rows];
+    this->matrix = allocate_matrix(this->rows, this->cols);
+
     for(unsigned i = 0; i < rows; ++i)
-    {
-        this->matrix[i] = new T[cols];
         for(unsigned j = 0; j < cols; ++j)
-        {
             this->matrix[i][j] = rhs.matrix[i][j];
-        }
-    }
 
     return *this;
 }
@@ -390,15 +388,10 @@ Matrix<T> Matrix<T>::operator-(const Matrix & right) const
     temp.cols = this->cols;
     temp.rows = this->rows;
 
-    temp.matrix = new T*[temp.rows];
+    temp.matrix = allocate_matrix(temp.rows, temp.cols);
     for(unsigned i = 0; i < temp.rows; ++i)
-    {
-        temp.matrix[i] = new T[temp.cols];
         for(unsigned j = 0; j < temp.cols; ++j)
-        {
             temp.matrix[i][j] = this->matrix[i][j] - right.matrix[i][j];
-        }
-    }
 
     return std::move(temp);
 }
@@ -413,17 +406,15 @@ Matrix<T> Matrix<T>::operator*(const Matrix & right) const
     temp.rows = this->rows;
     temp.cols = right.cols;
 
-    temp.matrix = new T*[temp.rows];
+    temp.matrix = allocate_matrix(temp.rows, temp.cols);
+
     for(unsigned i = 0; i < temp.rows; ++i)
-    {
-        temp.matrix[i] = new T[temp.cols];
         for(unsigned j = 0; j < temp.cols; ++j)
         {
             temp.matrix[i][j] = T();
             for(unsigned k = 0; k < this->cols; ++k)
                 temp.matrix[i][j] += this->matrix[i][k] * right.matrix[k][j];
         }
-    }
 
     return std::move(temp);
 }
@@ -460,4 +451,14 @@ template<>
 bool Matrix<double>::equal(const double & a, const double & b)
 {
     return std::abs(a - b) < DOUBLE_COMP_PRECISION;
+}
+
+template<typename T>
+T** Matrix<T>::allocate_matrix(unsigned h, unsigned w)
+{
+    T** temp = new T*[h];
+    for(unsigned i = 0; i < h; ++i)
+        temp[i] = new T[w];
+
+    return temp;
 }
