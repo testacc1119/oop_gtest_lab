@@ -46,8 +46,8 @@ public:
     Matrix operator-(const Matrix & right) const;
     Matrix operator*(const Matrix & right) const;
 
-    bool operator==(const Matrix & right);
-    bool operator!=(const Matrix & right);
+    bool operator==(const Matrix & right) const;
+    bool operator!=(const Matrix & right) const;
 
 private:
     // For square matrixes only
@@ -429,7 +429,7 @@ Matrix<T> Matrix<T>::operator*(const Matrix & right) const
 }
 
 template<typename T>
-bool Matrix<T>::operator==(const Matrix & right)
+bool Matrix<T>::operator==(const Matrix & right) const
 {
     if(this->rows != right.rows || this->cols != right.cols)
         return false;
@@ -443,7 +443,7 @@ bool Matrix<T>::operator==(const Matrix & right)
 }
 
 template<typename T>
-bool Matrix<T>::operator!=(const Matrix & right)
+bool Matrix<T>::operator!=(const Matrix & right) const
 {
     return !(*this == right);
 }
