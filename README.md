@@ -12,7 +12,7 @@ Project plan:
 - [x] Basic matrix constructors and destructor
 - [x] Basic matrix operations
 - [x] Basic matrix operators
-- [ ] Provide unit-testing
+- [x] Provide unit-testing
 
 ### Requirements for the class Matrix
 
