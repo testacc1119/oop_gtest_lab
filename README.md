@@ -31,5 +31,7 @@ Project plan:
 - Call this commands sequently:
 
 > git clone --recurse-submodules -j8 https://github.com/Pechenkya/OOP-Lab.git
+
 > cd OOP-Lab/
+
 > code ./
