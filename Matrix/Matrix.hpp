@@ -1,7 +1,16 @@
 #include <utility>
 #include <cmath>
 
+// Double comparement precision
 #define DOUBLE_COMP_PRECISION .0000000001
+
+/*
+
+    Template T defines field that matrix operates on.
+
+    As example, it's incorrect to create Matrix<int> because int isn't a field
+
+*/
 
 template<typename T>
 class Matrix
@@ -26,9 +35,9 @@ public:
     Matrix submatrix(unsigned r, unsigned c) const;
     void clear();
 
-    // For square and numeric matrixes only
-    double determinant() const;
-    Matrix<double> inverse() const;    
+    // For square matrixes only
+    T determinant() const;
+    Matrix<T> inverse() const;    
 
     // Operator overloadings
     Matrix& operator=(const Matrix & rhs);
@@ -41,9 +50,9 @@ public:
     bool operator!=(const Matrix & right);
 
 private:
-    // For square and numeric matrixes only
+    // For square matrixes only
     Matrix adjugate() const;
-    static double determinant(const Matrix& mtr, unsigned dim);
+    static T determinant(const Matrix& mtr, unsigned dim);
 
     // Assisting methods
     static bool equal(const T & a, const T & b);
@@ -227,7 +236,7 @@ void Matrix<T>::clear()
 //----------- For square --------------
 
 template<typename T>
-double Matrix<T>::determinant() const
+T Matrix<T>::determinant() const
 {
     if(this->rows != this->cols)
         throw "Method only can be used for square matrixes (determinant)";
@@ -236,27 +245,27 @@ double Matrix<T>::determinant() const
 }
 
 template<typename T>
-Matrix<double> Matrix<T>::inverse() const
+Matrix<T> Matrix<T>::inverse() const
 {
     if(this->rows != this->cols)
         throw "Method only can be used for square matrixes (inverse)";  
 
     unsigned dim = this->rows;
-    double det = determinant(*this, dim);
+    T det = determinant(*this, dim);
 
     if(det == 0)
         throw "No inverse for 0-determinant matrix exists";
 
     Matrix adj = this->adjugate();
-    Matrix<double> res;
+    Matrix<T> res;
     res.cols = res.rows = dim;
-    res.matrix = new double*[dim];
+    res.matrix = new T*[dim];
 
     for(unsigned i = 0; i < dim; ++i)
     {
-        res.matrix[i] = new double[dim];
+        res.matrix[i] = new T[dim];
         for(unsigned j = 0; j < dim; ++j)
-            res.matrix[i][j] = adj.matrix[i][j] / double(det);
+            res.matrix[i][j] = adj.matrix[i][j] / T(det);
     }  
 
     return std::move(res);
@@ -267,12 +276,12 @@ Matrix<double> Matrix<T>::inverse() const
 //----------- Hidden functionality --------------
 
 template<typename T>
-double Matrix<T>::determinant(const Matrix& mtr, unsigned dim)
+T Matrix<T>::determinant(const Matrix& mtr, unsigned dim)
 {
     if(dim == 2)
         return mtr.matrix[0][0] * mtr.matrix[1][1] - mtr.matrix[0][1] * mtr.matrix[1][0];
 
-    double det = 0.0;
+    T det = 0.0;
     Matrix submatrix;
     for(unsigned k = 0; k < dim; ++k)
     {
@@ -288,17 +297,17 @@ Matrix<T> Matrix<T>::adjugate() const
 {
     unsigned dim = this->rows;
     if(dim == 1)
-        return Matrix<double>({ { 1 } });
+        return Matrix<T>({ { 1 } });
 
     Matrix res;
     res.cols = res.rows = dim;
 
-    res.matrix = new double*[dim];
+    res.matrix = new T*[dim];
 
     Matrix subm;
     for(unsigned i = 0; i < dim; ++i)
     {
-        res.matrix[i] = new double[dim];
+        res.matrix[i] = new T[dim];
         for(unsigned j = 0; j < dim; ++j)
         {
             subm = this->submatrix(j, i);

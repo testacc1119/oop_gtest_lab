@@ -14,7 +14,8 @@ Project plan:
 - [x] Basic matrix operators
 - [ ] Provide unit-testing
 
-### To think about
+### Requirements for the class Matrix
 
-Some functionality could be useless for most of types and classes, so maybe remove templates and leave just double?
+- Template T -- describes field
+- T needs user-provided compare, multiplication, sum operator
 
