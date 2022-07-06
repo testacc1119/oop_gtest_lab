@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 
 # Alias
-set(This Matrix)
+set(This Bubbles)
 
 # Languages for project (creating project)
 project(${This} C CXX)
@@ -17,11 +17,11 @@ add_subdirectory(googletest)
 
 # Useful: List of header and source files for our project
 set(Headers
-    Matrix/Matrix.hpp
+    Bubbles/Bubbles.hpp
 )
 
 set(Sources
-    Matrix/Matrix.cpp
+    Bubbles/Bubbles.cpp
 )
 
 # Building library for testing
